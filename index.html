@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title id="page-title">Pizza King — Doiwala</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav__logo">Pizza<span>King</span></div>
+  <ul class="nav__links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#hours">Hours</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav__right">
+    <button class="cart-trigger" onclick="Cart.open()">
+      🛒 Cart
+      <span class="cart-badge" id="cart-badge">0</span>
+    </button>
+    <a class="nav__order" id="nav-order" href="#" target="_blank">Order Now</a>
+  </div>
+</nav>
+
+<!-- FLOATING BUTTONS -->
+<div class="floating-btns">
+  <a id="float-wa" class="float-btn float-btn--wa" href="#" target="_blank" title="Order on WhatsApp">💬</a>
+  <a id="float-call" class="float-btn float-btn--call" href="#" title="Call Us">📞</a>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cart-overlay" onclick="Cart.close()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cart-drawer__header">
+    <div class="cart-drawer__title">🛒 Your Order</div>
+    <button class="cart-close" onclick="Cart.close()">✕</button>
+  </div>
+  <div class="cart-drawer__body" id="cart-body">
+    <div class="cart-empty"><span>🛒</span><p>Your cart is empty</p><small style="color:var(--muted);font-size:0.8rem">Tap + on any item to add it!</small></div>
+  </div>
+  <div class="cart-drawer__footer">
+    <div class="cart-total">
+      <span class="cart-total__label">Total</span>
+      <span class="cart-total__value" id="cart-total-val">₹0</span>
+    </div>
+    <textarea class="cart-note" id="cart-note-input" rows="2" placeholder="Add a note — extra spicy, no onion, your delivery address..."></textarea>
+    <button class="whatsapp-order-btn" onclick="Cart.sendToWhatsApp()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Send Order on WhatsApp
+    </button>
+    <button class="cart-clear" onclick="if(confirm('Clear your cart?')) Cart.clear()">🗑 Clear cart</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero__bg">PIZZA</div>
+  <div class="hero__inner">
+    <div class="fade-in">
+      <div class="hero__badge">🛵 Free Home Delivery</div>
+      <h1 class="hero__title">Where Every Slice<span class="accent"> Tells a Story</span></h1>
+      <p class="hero__sub" id="hero-sub"></p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" id="hero-wa" href="#" target="_blank">💬 Order on WhatsApp</a>
+        <a href="#menu" class="btn btn--ghost">View Menu →</a>
+      </div>
+      <div class="hero__stats">
+        <div><div class="hero__stat-num">50+</div><div class="hero__stat-label">Menu Items</div></div>
+        <div><div class="hero__stat-num">₹30</div><div class="hero__stat-label">Starting Price</div></div>
+        <div><div class="hero__stat-num">🏠</div><div class="hero__stat-label">Free Delivery</div></div>
+      </div>
+    </div>
+    <div class="fade-in" style="display:flex;justify-content:center">
+      <div class="pizza-visual">🍕</div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="section__inner">
+    <div class="about__grid">
+      <div class="about__image fade-in" id="about-img">🍕</div>
+      <div class="fade-in">
+        <div class="section__label">Our Story</div>
+        <h2 class="section__title">A Kingdom Built on Flavour</h2>
+        <p class="section__sub" id="about-desc"></p>
+        <div class="about__features" id="about-features"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section class="menu-section" id="menu">
+  <div class="section__inner">
+    <div class="section__label fade-in">Our Menu</div>
+    <h2 class="section__title fade-in">Something for Every Craving</h2>
+    <p class="section__sub fade-in">Tap <strong>+</strong> on any item to add it to your cart, then send your full order straight to WhatsApp.</p>
+    <div class="menu__tabs fade-in" id="menu-tabs"></div>
+    <div id="menu-panels"></div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery-section" id="gallery">
+  <div class="section__inner">
+    <div class="section__label fade-in">Gallery</div>
+    <h2 class="section__title fade-in">Food that Speaks for Itself</h2>
+    <p class="section__sub fade-in">Upload your food photos to the <code>images/</code> folder in GitHub to show them here.</p>
+    <div class="gallery__grid fade-in" id="gallery-grid"></div>
+  </div>
+</section>
+
+<!-- HOURS -->
+<section class="hours-section" id="hours">
+  <div class="section__inner">
+    <div class="section__label fade-in">Opening Hours</div>
+    <h2 class="section__title fade-in">We're Open &amp; Ready</h2>
+    <div class="hours__grid fade-in">
+      <div class="hours-card"><h3>🕐 Daily Hours</h3><div id="hours-rows"></div></div>
+      <div class="hours-card">
+        <h3>🛵 Delivery Info</h3>
+        <div class="hours-row"><span class="hours-day">Delivery Hours</span><span class="hours-time hours-time--open">All Day</span></div>
+        <div class="hours-row"><span class="hours-day">Min. Order</span><span class="hours-time">No minimum</span></div>
+        <div class="hours-row"><span class="hours-day">Delivery Charge</span><span class="hours-time hours-time--open">FREE 🎉</span></div>
+        <div class="hours-row"><span class="hours-day">Order Via</span><span class="hours-time">WhatsApp / Call</span></div>
+      </div>
+    </div>
+    <div class="delivery-badge fade-in" id="delivery-badge">🛵 Free Delivery</div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="section__inner">
+    <div class="section__label fade-in">Get in Touch</div>
+    <h2 class="section__title fade-in">Order Now or Visit Us</h2>
+    <div class="contact__grid fade-in">
+      <div class="contact__info" id="contact-info"></div>
+      <div class="contact__actions" id="contact-actions"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" id="footer"></footer>
+
+<!-- SCRIPTS: data first, then cart, then app logic -->
+<script src="data.js"></script>
+<script src="cart.js"></script>
+<script>
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const waUrl = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(SITE.whatsappMsg)}`;
+
+// Wire links
+document.getElementById('page-title').textContent = SITE.name + ' — ' + SITE.address;
+document.getElementById('nav-order').href = waUrl;
+document.getElementById('float-wa').href = waUrl;
+document.getElementById('float-call').href = 'tel:+91' + SITE.phone1;
+document.getElementById('hero-wa').href = waUrl;
+document.getElementById('hero-sub').textContent = SITE.description;
+
+// About
+document.getElementById('about-desc').textContent = SITE.description;
+document.getElementById('about-features').innerHTML = SITE.features.map(f =>
+  `<div class="feature"><div class="feature__icon">${f.icon}</div><div><div class="feature__title">${esc(f.title)}</div><div class="feature__desc">${esc(f.desc)}</div></div></div>`
+).join('');
+
+// Gallery
+document.getElementById('gallery-grid').innerHTML = SITE.gallery.map(g =>
+  `<div class="gallery__item${g.tall?' gallery__item--tall':''}">
+    ${g.src?`<img src="${esc(g.src)}" alt="${esc(g.label)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`:``}
+    <span style="${g.src?'display:none':''}font-size:${g.tall?'5':'3.5'}rem">${g.emoji}</span>
+    <div class="gallery__label">${esc(g.label)}</div>
+  </div>`).join('');
+
+// Hours
+document.getElementById('hours-rows').innerHTML = SITE.hours.map(h =>
+  `<div class="hours-row"><span class="hours-day">${esc(h.day)}</span><span class="hours-time${h.open?' hours-time--open':''}">${esc(h.time)}</span></div>`
+).join('');
+document.getElementById('delivery-badge').textContent = '🛵 Free Delivery — ' + SITE.deliveryArea;
+
+// Contact
+const waSVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+
+document.getElementById('contact-info').innerHTML = `
+  <div class="contact-card"><div class="contact-card__icon">📍</div><div><div class="contact-card__label">Address</div><div class="contact-card__value">${esc(SITE.address)}</div></div></div>
+  <div class="contact-card"><div class="contact-card__icon">📞</div><div><div class="contact-card__label">Phone</div><div class="contact-card__value"><a href="tel:+91${SITE.phone1}">+91 ${SITE.phone1}</a><br><a href="tel:+91${SITE.phone2}">+91 ${SITE.phone2}</a></div></div></div>
+  <div class="contact-card"><div class="contact-card__icon">💬</div><div><div class="contact-card__label">WhatsApp Orders</div><div class="contact-card__value"><a href="${waUrl}" target="_blank">Chat on WhatsApp →</a></div></div></div>
+  <div class="map-box"><span style="font-size:2rem">🗺️</span><span>${esc(SITE.address)}</span><a href="${esc(SITE.mapsLink)}" target="_blank" style="color:var(--orange);font-weight:600">Open in Google Maps →</a></div>`;
+
+document.getElementById('contact-actions').innerHTML = `
+  <p style="font-size:1.05rem;font-weight:500;margin-bottom:.5rem">Ready to order? Reach us instantly:</p>
+  <a href="${waUrl}" class="action-btn action-btn--wa" target="_blank">${waSVG} Order on WhatsApp</a>
+  <a href="tel:+91${SITE.phone1}" class="action-btn action-btn--call">📞 Call — ${SITE.phone1}</a>
+  <a href="tel:+91${SITE.phone2}" class="action-btn action-btn--dark">📞 Call — ${SITE.phone2}</a>
+  <div class="order-tip">💡 <strong>How to order:</strong> Add items to cart, tap "Send Order on WhatsApp", type your delivery address and we'll bring it hot — <strong>absolutely free!</strong></div>`;
+
+// Footer
+document.getElementById('footer').innerHTML = `
+  <p>© ${new Date().getFullYear()} <strong>${esc(SITE.name)}</strong> — ${esc(SITE.address)} &nbsp;|&nbsp;
+   <a href="tel:+91${SITE.phone1}">${SITE.phone1}</a> &nbsp;|&nbsp;
+   <a class="wa" href="${waUrl}" target="_blank">WhatsApp</a></p>
+  <p style="margin-top:.4rem">Made with 🍕 for the people of Doiwala</p>`;
+
+// MENU BUILDER
+function addBtn(name, price, size) {
+  const n = esc(name), s = size ? esc(size) : '';
+  return `<button class="add-btn" title="Add to cart"
+    onclick="Cart.add('${n}${s?' ('+s+')':''}',${price});this.classList.add('added');setTimeout(()=>this.classList.remove('added'),600)">+</button>`;
+}
+
+function multiPriceHtml(prices) {
+  return `<div class="multi-price">${prices.map(p=>`<div>${p.label} <span>₹${p.price}</span></div>`).join('')}</div>`;
+}
+
+function buildPizza(cat) {
+  let html = cat.tiers.map(tier => `
+    <div class="pizza-header">
+      <span>${esc(tier.name)}</span>
+      <span class="sz">Regular</span><span class="sz">Medium</span><span class="sz">Large</span>
+      <span style="text-align:center;font-size:0.72rem">Add (R/M/L)</span>
+    </div>
+    <div class="pizza-tier">
+      <div class="tier-price-row">
+        <span style="font-size:.78rem;color:var(--muted)">${esc(tier.name)}</span>
+        <span class="tier-price">₹${tier.prices.regular}</span>
+        <span class="tier-price">₹${tier.prices.medium}</span>
+        <span class="tier-price">₹${tier.prices.large}</span>
+        <span style="display:flex;gap:3px;justify-content:center">
+          ${addBtn(tier.name+' Pizza', tier.prices.regular, 'Regular')}
+          ${addBtn(tier.name+' Pizza', tier.prices.medium,  'Medium')}
+          ${addBtn(tier.name+' Pizza', tier.prices.large,   'Large')}
+        </span>
+      </div>
+      ${tier.items.map(it=>`
+        <div class="pizza-item">
+          <div><div class="item__name">${esc(it.name)}</div>${it.desc?`<div class="item__desc">${esc(it.desc)}</div>`:''}</div>
+          <span class="item__tag tag--${tier.tag}">${tier.tag==='veg'?'Veg':'Non-Veg'}</span>
+          <span style="display:flex;gap:3px;justify-content:center">
+            ${addBtn(it.name, tier.prices.regular, 'Regular')}
+            ${addBtn(it.name, tier.prices.medium,  'Medium')}
+            ${addBtn(it.name, tier.prices.large,   'Large')}
+          </span>
+        </div>`).join('')}
+    </div>`).join('');
+  if (cat.extras) {
+    html += `<div class="sub-heading">${esc(cat.extras.heading)}</div><div class="menu-grid">
+      ${cat.extras.items.map(it=>`
+        <div class="menu-card">
+          <div class="menu-card__info"><div class="menu-card__name">${esc(it.name)}</div></div>
+          <div class="menu-card__right"><div class="menu-card__price">₹${it.price}</div>${addBtn(it.name,it.price)}</div>
+        </div>`).join('')}
+    </div>`;
+  }
+  return html;
+}
+
+function buildSections(cat) {
+  return cat.sections.map(sec=>`
+    <div class="sub-heading">${esc(sec.heading)}</div>
+    <div class="menu-grid">
+      ${sec.items.map(it=>{
+        const price = it.price !== undefined ? it.price : (it.prices?it.prices[0].price:0);
+        const priceHtml = it.price !== undefined
+          ? `<div class="menu-card__price">₹${it.price}</div>`
+          : `<div class="menu-card__price">${multiPriceHtml(it.prices)}</div>`;
+        return `<div class="menu-card">
+          <div class="menu-card__info">
+            <div class="menu-card__name">${esc(it.name)}</div>
+            ${it.desc?`<div class="menu-card__sub">${esc(it.desc)}</div>`:''}
+          </div>
+          <div class="menu-card__right">${priceHtml}${addBtn(it.name,price)}</div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+const tabsEl = document.getElementById('menu-tabs');
+const panelsEl = document.getElementById('menu-panels');
+SITE.menu.forEach((cat,i)=>{
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn'+(i===0?' active':'');
+  btn.textContent = cat.icon+' '+cat.label;
+  btn.onclick = ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.menu__panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+cat.id).classList.add('active');
+  };
+  tabsEl.appendChild(btn);
+  const panel = document.createElement('div');
+  panel.className = 'menu__panel'+(i===0?' active':'');
+  panel.id = 'panel-'+cat.id;
+  panel.innerHTML = cat.type==='pizza' ? buildPizza(cat) : buildSections(cat);
+  panelsEl.appendChild(panel);
+});
+
+// Scroll fade
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+
+// Init cart (loads saved state from localStorage)
+Cart.init();
+</script>
+</body>
+</html>
