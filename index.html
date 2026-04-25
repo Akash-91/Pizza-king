@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -9,6 +10,7 @@
 <body>
 
 <!-- NAV -->
+
 <nav class="nav">
   <div class="nav__logo">Pizza<span>King</span></div>
   <ul class="nav__links">
@@ -28,12 +30,14 @@
 </nav>
 
 <!-- FLOATING BUTTONS -->
+
 <div class="floating-btns">
   <a id="float-wa" class="float-btn float-btn--wa" href="#" target="_blank" title="Order on WhatsApp">💬</a>
   <a id="float-call" class="float-btn float-btn--call" href="#" title="Call Us">📞</a>
 </div>
 
 <!-- CART DRAWER -->
+
 <div class="cart-overlay" id="cart-overlay" onclick="Cart.close()"></div>
 <div class="cart-drawer" id="cart-drawer">
   <div class="cart-drawer__header">
@@ -58,6 +62,7 @@
 </div>
 
 <!-- HERO -->
+
 <section class="hero" id="home">
   <div class="hero__bg">PIZZA</div>
   <div class="hero__inner">
@@ -82,6 +87,7 @@
 </section>
 
 <!-- ABOUT -->
+
 <section class="about" id="about">
   <div class="section__inner">
     <div class="about__grid">
@@ -97,6 +103,7 @@
 </section>
 
 <!-- MENU -->
+
 <section class="menu-section" id="menu">
   <div class="section__inner">
     <div class="section__label fade-in">Our Menu</div>
@@ -108,6 +115,7 @@
 </section>
 
 <!-- GALLERY -->
+
 <section class="gallery-section" id="gallery">
   <div class="section__inner">
     <div class="section__label fade-in">Gallery</div>
@@ -118,6 +126,7 @@
 </section>
 
 <!-- HOURS -->
+
 <section class="hours-section" id="hours">
   <div class="section__inner">
     <div class="section__label fade-in">Opening Hours</div>
@@ -137,6 +146,7 @@
 </section>
 
 <!-- CONTACT -->
+
 <section class="contact" id="contact">
   <div class="section__inner">
     <div class="section__label fade-in">Get in Touch</div>
@@ -149,11 +159,15 @@
 </section>
 
 <!-- FOOTER -->
+
 <footer class="footer" id="footer"></footer>
 
 <!-- SCRIPTS: data first, then cart, then app logic -->
+
 <script src="data.js"></script>
+
 <script src="cart.js"></script>
+
 <script>
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const waUrl = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(SITE.whatsappMsg)}`;
@@ -209,96 +223,210 @@ document.getElementById('footer').innerHTML = `
    <a class="wa" href="${waUrl}" target="_blank">WhatsApp</a></p>
   <p style="margin-top:.4rem">Made with 🍕 for the people of Doiwala</p>`;
 
-// MENU BUILDER
-function addBtn(name, price, size) {
-  const n = esc(name), s = size ? esc(size) : '';
-  return `<button class="add-btn" title="Add to cart"
-    onclick="Cart.add('${n}${s?' ('+s+')':''}',${price});this.classList.add('added');setTimeout(()=>this.classList.remove('added'),600)">+</button>`;
+// ── MENU BUILDER ────────────────────────────────────────────
+// Each card stores its selected size in a data attribute.
+// The qty control is always shown (default 0).
+// Clicking + when qty=0 → adds 1 and bumps qty; − reduces.
+// Cart.add is called on every + click.
+
+const cardState = {}; // cardId → { size, qty }
+
+function qtyControlHtml(cardId) {
+  return `<div class="qty-control" id="qc-${cardId}">
+    <button class="qty-control__btn" onclick="changeQty('${cardId}',-1)" id="qminus-${cardId}" disabled>−</button>
+    <span class="qty-control__num" id="qnum-${cardId}">0</span>
+    <button class="qty-control__btn" onclick="changeQty('${cardId}',1)" id="qplus-${cardId}">+</button>
+  </div>`;
 }
 
-function multiPriceHtml(prices) {
-  return `<div class="multi-price">${prices.map(p=>`<div>${p.label} <span>₹${p.price}</span></div>`).join('')}</div>`;
+function changeQty(cardId, delta) {
+  const state = cardState[cardId] || { size: null, qty: 0 };
+  const card = document.getElementById('card-' + cardId);
+
+  // For pizza cards, must pick a size first
+  if (card && card.dataset.pizza === '1' && !state.size) {
+    // flash the size row
+    const sizeRow = card.querySelector('.size-selector');
+    if (sizeRow) {
+      sizeRow.style.outline = '2px solid var(--orange)';
+      sizeRow.style.borderRadius = '8px';
+      setTimeout(() => { sizeRow.style.outline = ''; sizeRow.style.borderRadius = ''; }, 1000);
+    }
+    return;
+  }
+
+  state.qty = Math.max(0, state.qty + delta);
+  cardState[cardId] = state;
+
+  // Update DOM
+  const numEl = document.getElementById('qnum-' + cardId);
+  const minusEl = document.getElementById('qminus-' + cardId);
+  if (numEl) {
+    numEl.textContent = state.qty;
+    numEl.classList.toggle('active', state.qty > 0);
+  }
+  if (minusEl) minusEl.disabled = state.qty <= 0;
+
+  // Highlight card if qty > 0
+  if (card) card.classList.toggle('has-qty', state.qty > 0);
+
+  // Update selected info label
+  updateSelectedInfo(cardId);
+
+  // Sync cart: remove old entry then re-add with new qty
+  const name = card ? card.dataset.name : cardId;
+  const price = parseInt(card ? card.dataset.price : '0');
+  const size = state.size || null;
+  const cartName = size ? name + ' (' + size + ')' : name;
+
+  // Remove from cart then add back with correct qty
+  Cart.setQty(cartName, price, state.qty);
+}
+
+function selectSize(cardId, size, price, btn) {
+  // Update state
+  if (!cardState[cardId]) cardState[cardId] = { size: null, qty: 0 };
+  cardState[cardId].size = size;
+
+  // Update card price attribute
+  const card = document.getElementById('card-' + cardId);
+  if (card) card.dataset.price = price;
+
+  // Toggle size buttons
+  const btns = card ? card.querySelectorAll('.size-btn') : [];
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  // If already had qty > 0, sync cart with new size/price
+  const qty = cardState[cardId].qty;
+  if (qty > 0) {
+    const name = card ? card.dataset.name : cardId;
+    // Remove all size variants then re-add correct one
+    ['Regular','Medium','Large'].forEach(s => Cart.setQty(name + ' (' + s + ')', 0, 0));
+    Cart.setQty(name + ' (' + size + ')', price, qty);
+  }
+
+  updateSelectedInfo(cardId);
+}
+
+function updateSelectedInfo(cardId) {
+  const state = cardState[cardId] || { size: null, qty: 0 };
+  const el = document.getElementById('info-' + cardId);
+  if (!el) return;
+  if (state.qty === 0) { el.textContent = ''; return; }
+  const card = document.getElementById('card-' + cardId);
+  const price = parseInt(card ? card.dataset.price : '0');
+  const sizeStr = state.size ? state.size + ' · ' : '';
+  el.textContent = '✓ ' + sizeStr + 'Qty ' + state.qty + ' · ₹' + (price * state.qty);
+}
+
+// Build a pizza item card
+function buildPizzaCard(it, tier, catTag) {
+  const cardId = (tier.name + '_' + it.name).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  cardState[cardId] = { size: null, qty: 0 };
+
+  const sizes = [
+    { label: 'Regular', price: tier.prices.regular },
+    { label: 'Medium',  price: tier.prices.medium  },
+    { label: 'Large',   price: tier.prices.large   },
+  ];
+
+  const sizeBtns = sizes.map(s =>
+    `<button class="size-btn" onclick="selectSize('${cardId}','${s.label}',${s.price},this)">
+      <span class="size-label">${s.label}</span>
+      <span class="size-price">₹${s.price}</span>
+    </button>`
+  ).join('');
+
+  return `<div class="item-card" id="card-${cardId}" data-pizza="1" data-name="${esc(it.name)}" data-price="${tier.prices.regular}">
+    <div class="item-card__top">
+      <div class="item-card__info">
+        <div class="item-card__name">${esc(it.name)}</div>
+        ${it.desc ? `<div class="item-card__desc">${esc(it.desc)}</div>` : ''}
+      </div>
+      <span class="item-card__tag tag--${catTag}">${catTag === 'veg' ? 'Veg' : 'Non-Veg'}</span>
+    </div>
+    <div class="size-selector">${sizeBtns}</div>
+    <div class="item-card__bottom">
+      <div class="item-card__selected-info" id="info-${cardId}"></div>
+      ${qtyControlHtml(cardId)}
+    </div>
+  </div>`;
+}
+
+// Build a simple item card (no size)
+function buildSimpleCard(it) {
+  const price = it.price !== undefined ? it.price : (it.prices ? it.prices[0].price : 0);
+  const cardId = it.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  cardState[cardId] = { size: null, qty: 0 };
+
+  const priceHtml = it.prices
+    ? `<div class="multi-price-list">${it.prices.map(p => `<span class="multi-price-chip">${p.label} <strong>₹${p.price}</strong></span>`).join('')}</div>`
+    : `<span class="price-badge">₹${price}</span>`;
+
+  return `<div class="item-card" id="card-${cardId}" data-name="${esc(it.name)}" data-price="${price}">
+    <div class="item-card__top">
+      <div class="item-card__info">
+        <div class="item-card__name">${esc(it.name)}</div>
+        ${it.desc ? `<div class="item-card__desc">${esc(it.desc)}</div>` : ''}
+      </div>
+      ${priceHtml}
+    </div>
+    <div class="item-card__bottom">
+      <div class="item-card__selected-info" id="info-${cardId}"></div>
+      ${qtyControlHtml(cardId)}
+    </div>
+  </div>`;
 }
 
 function buildPizza(cat) {
   let html = cat.tiers.map(tier => `
-    <div class="pizza-header">
-      <span>${esc(tier.name)}</span>
-      <span class="sz">Regular</span><span class="sz">Medium</span><span class="sz">Large</span>
-      <span style="text-align:center;font-size:0.72rem">Add (R/M/L)</span>
-    </div>
-    <div class="pizza-tier">
-      <div class="tier-price-row">
-        <span style="font-size:.78rem;color:var(--muted)">${esc(tier.name)}</span>
-        <span class="tier-price">₹${tier.prices.regular}</span>
-        <span class="tier-price">₹${tier.prices.medium}</span>
-        <span class="tier-price">₹${tier.prices.large}</span>
-        <span style="display:flex;gap:3px;justify-content:center">
-          ${addBtn(tier.name+' Pizza', tier.prices.regular, 'Regular')}
-          ${addBtn(tier.name+' Pizza', tier.prices.medium,  'Medium')}
-          ${addBtn(tier.name+' Pizza', tier.prices.large,   'Large')}
+    <div class="pizza-tier-block">
+      <div class="pizza-tier-label">
+        <span class="pizza-tier-label__name">${esc(tier.name)}</span>
+        <span class="pizza-tier-label__prices">
+          Regular <span>₹${tier.prices.regular}</span> &nbsp;·&nbsp;
+          Medium <span>₹${tier.prices.medium}</span> &nbsp;·&nbsp;
+          Large <span>₹${tier.prices.large}</span>
         </span>
       </div>
-      ${tier.items.map(it=>`
-        <div class="pizza-item">
-          <div><div class="item__name">${esc(it.name)}</div>${it.desc?`<div class="item__desc">${esc(it.desc)}</div>`:''}</div>
-          <span class="item__tag tag--${tier.tag}">${tier.tag==='veg'?'Veg':'Non-Veg'}</span>
-          <span style="display:flex;gap:3px;justify-content:center">
-            ${addBtn(it.name, tier.prices.regular, 'Regular')}
-            ${addBtn(it.name, tier.prices.medium,  'Medium')}
-            ${addBtn(it.name, tier.prices.large,   'Large')}
-          </span>
-        </div>`).join('')}
+      <div class="cards-grid">
+        ${tier.items.map(it => buildPizzaCard(it, tier, tier.tag)).join('')}
+      </div>
     </div>`).join('');
+
   if (cat.extras) {
-    html += `<div class="sub-heading">${esc(cat.extras.heading)}</div><div class="menu-grid">
-      ${cat.extras.items.map(it=>`
-        <div class="menu-card">
-          <div class="menu-card__info"><div class="menu-card__name">${esc(it.name)}</div></div>
-          <div class="menu-card__right"><div class="menu-card__price">₹${it.price}</div>${addBtn(it.name,it.price)}</div>
-        </div>`).join('')}
-    </div>`;
+    html += `<div class="sub-heading">${esc(cat.extras.heading)}</div>
+    <div class="cards-grid">${cat.extras.items.map(it => buildSimpleCard(it)).join('')}</div>`;
   }
   return html;
 }
 
 function buildSections(cat) {
-  return cat.sections.map(sec=>`
+  return cat.sections.map(sec => `
     <div class="sub-heading">${esc(sec.heading)}</div>
-    <div class="menu-grid">
-      ${sec.items.map(it=>{
-        const price = it.price !== undefined ? it.price : (it.prices?it.prices[0].price:0);
-        const priceHtml = it.price !== undefined
-          ? `<div class="menu-card__price">₹${it.price}</div>`
-          : `<div class="menu-card__price">${multiPriceHtml(it.prices)}</div>`;
-        return `<div class="menu-card">
-          <div class="menu-card__info">
-            <div class="menu-card__name">${esc(it.name)}</div>
-            ${it.desc?`<div class="menu-card__sub">${esc(it.desc)}</div>`:''}
-          </div>
-          <div class="menu-card__right">${priceHtml}${addBtn(it.name,price)}</div>
-        </div>`;
-      }).join('')}
-    </div>`).join('');
+    <div class="cards-grid">${sec.items.map(it => buildSimpleCard(it)).join('')}</div>
+  `).join('');
 }
 
 const tabsEl = document.getElementById('menu-tabs');
 const panelsEl = document.getElementById('menu-panels');
-SITE.menu.forEach((cat,i)=>{
+SITE.menu.forEach((cat, i) => {
   const btn = document.createElement('button');
-  btn.className = 'tab-btn'+(i===0?' active':'');
-  btn.textContent = cat.icon+' '+cat.label;
-  btn.onclick = ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.menu__panel').forEach(p=>p.classList.remove('active'));
+  btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+  btn.textContent = cat.icon + ' ' + cat.label;
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.menu__panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('panel-'+cat.id).classList.add('active');
+    document.getElementById('panel-' + cat.id).classList.add('active');
   };
   tabsEl.appendChild(btn);
+
   const panel = document.createElement('div');
-  panel.className = 'menu__panel'+(i===0?' active':'');
-  panel.id = 'panel-'+cat.id;
-  panel.innerHTML = cat.type==='pizza' ? buildPizza(cat) : buildSections(cat);
+  panel.className = 'menu__panel' + (i === 0 ? ' active' : '');
+  panel.id = 'panel-' + cat.id;
+  panel.innerHTML = cat.type === 'pizza' ? buildPizza(cat) : buildSections(cat);
   panelsEl.appendChild(panel);
 });
 
@@ -311,5 +439,6 @@ document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
 // Init cart (loads saved state from localStorage)
 Cart.init();
 </script>
+
 </body>
 </html>
