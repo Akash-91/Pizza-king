@@ -223,137 +223,130 @@ document.getElementById('footer').innerHTML = `
   <p style="margin-top:.4rem">Made with 🍕 for the people of Doiwala</p>`;
 
 // ══════════════════════════════════════════════════════════
-//  MENU BUILDER — FIXED
+//  MENU BUILDER — CLEAN REDESIGN
 //
-//  KEY DESIGN:
-//  • Pizza items: each SIZE row is its own independent entry.
-//    "Farm Fresh (Regular)" and "Farm Fresh (Medium)" are
-//    completely separate cart items with separate qty counters.
-//  • Simple items: single qty counter per item.
-//  • Cart.setItem(id, name, price, qty) is the ONLY cart write.
-//  • No shared state between sizes — ever.
+//  Pizza:  1 card per item. Name shown ONCE.
+//          3 compact variant chips: [Reg ₹130 − 0 +]
+//  Multi:  1 card. Variant chips for Reg/Lg or Veg/NV.
+//  Simple: 1 card. Name + price + qty. Done.
 // ══════════════════════════════════════════════════════════
 
-// Generate a safe unique ID from any string
 function makeId(str) {
   return str.replace(/[^a-z0-9]/gi, '_').toLowerCase();
 }
 
-// Build a qty row: − 0 + with a label showing current selection
-function qtyRowHtml(id, name, price) {
-  return `
-    <div class="size-qty-row" id="sqr-${id}">
-      <div class="sqr__info">
-        <span class="sqr__name">${esc(name)}</span>
-        <span class="sqr__price">₹${price}</span>
-      </div>
-      <div class="sqr__controls">
-        <button class="qty-control__btn" id="qminus-${id}"
-          onclick="menuQtyChange('${id}','${esc(name)}',${price},-1)" disabled>−</button>
-        <span class="qty-control__num" id="qnum-${id}">0</span>
-        <button class="qty-control__btn" id="qplus-${id}"
-          onclick="menuQtyChange('${id}','${esc(name)}',${price},1)">+</button>
-      </div>
-    </div>`;
-}
-
-// Called by every +/- button on the menu
-function menuQtyChange(id, name, price, delta) {
-  const numEl  = document.getElementById('qnum-'   + id);
-  const minBtn = document.getElementById('qminus-' + id);
-  const row    = document.getElementById('sqr-'    + id);
+// Called by every + / − button
+function mqc(id, name, price, delta) {
+  const numEl  = document.getElementById('n-' + id);
+  const minBtn = document.getElementById('m-' + id);
+  const chip   = document.getElementById('c-' + id);
   if (!numEl) return;
-
-  let qty = parseInt(numEl.textContent) || 0;
-  qty = Math.max(0, qty + delta);
-
+  let qty = Math.max(0, (parseInt(numEl.textContent) || 0) + delta);
   numEl.textContent = qty;
-  numEl.classList.toggle('active', qty > 0);
+  numEl.classList.toggle('vqn--on', qty > 0);
   minBtn.disabled = qty <= 0;
-  row.classList.toggle('sqr--active', qty > 0);
-
-  // Sync to cart — each (name+size) is its own independent item
+  chip.classList.toggle('vc--on', qty > 0);
   Cart.setItem(id, name, price, qty);
 }
 
-// ── PIZZA categories ───────────────────────────────────────
-// For pizzas: one card per item, inside the card show 3 rows
-// (Regular / Medium / Large), each with its own − 0 + counter.
+// A single variant chip: [Label ₹price  − 0 +]
+function chip(id, label, price) {
+  return `<div class="v-chip" id="c-${id}">
+    <span class="v-chip__label">${esc(label)}</span>
+    <span class="v-chip__price">₹${price}</span>
+    <div class="v-chip__qty">
+      <button class="vqb" id="m-${id}" onclick="mqc('${id}','${esc(label)}',${price},-1)" disabled>−</button>
+      <span class="vqn" id="n-${id}">0</span>
+      <button class="vqb" onclick="mqc('${id}','${esc(label)}',${price},1)">+</button>
+    </div>
+  </div>`;
+}
 
+// ── PIZZA card ─────────────────────────────────────────────
+// Name + desc once. Then one row of 3 chips: Reg / Med / Lg
 function buildPizzaCard(it, tier, tag) {
-  const sizes = [
-    { size: 'Regular', price: tier.prices.regular },
-    { size: 'Medium',  price: tier.prices.medium  },
-    { size: 'Large',   price: tier.prices.large   },
-  ];
+  const chips = [
+    { label: it.name + ' (Regular)', short: 'Regular', price: tier.prices.regular },
+    { label: it.name + ' (Medium)',  short: 'Medium',  price: tier.prices.medium  },
+    { label: it.name + ' (Large)',   short: 'Large',   price: tier.prices.large   },
+  ].map(v => chip(makeId(it.name + '_' + tier.name + '_' + v.short), v.label, v.price)).join('');
 
-  const rows = sizes.map(s => {
-    const id = makeId(it.name + '_' + tier.name + '_' + s.size);
-    return qtyRowHtml(id, it.name + ' — ' + s.size, s.price);
+  return `<div class="mc">
+    <div class="mc__head">
+      <div>
+        <div class="mc__name">${esc(it.name)}</div>
+        ${it.desc ? `<div class="mc__desc">${esc(it.desc)}</div>` : ''}
+      </div>
+      <span class="mc__tag tag--${tag}">${tag === 'veg' ? '🟢 Veg' : '🔴 Non-Veg'}</span>
+    </div>
+    <div class="mc__chips">${chips}</div>
+  </div>`;
+}
+
+// ── MULTI-VARIANT card (pasta Reg/Lg, soup Veg/NV, rice V/Egg/NV) ──
+function buildMultiCard(it) {
+  const chips = it.prices.map(p => {
+    const id = makeId(it.name + '_' + p.label);
+    return chip(id, it.name + ' (' + p.label + ')', p.price);
   }).join('');
-
-  return `
-    <div class="item-card">
-      <div class="item-card__top">
-        <div class="item-card__info">
-          <div class="item-card__name">${esc(it.name)}</div>
-          ${it.desc ? `<div class="item-card__desc">${esc(it.desc)}</div>` : ''}
-        </div>
-        <span class="item-card__tag tag--${tag}">${tag === 'veg' ? 'Veg' : 'Non-Veg'}</span>
+  return `<div class="mc">
+    <div class="mc__head">
+      <div>
+        <div class="mc__name">${esc(it.name)}</div>
+        ${it.desc ? `<div class="mc__desc">${esc(it.desc)}</div>` : ''}
       </div>
-      <div class="size-rows">${rows}</div>
-    </div>`;
+    </div>
+    <div class="mc__chips">${chips}</div>
+  </div>`;
 }
 
-function buildPizza(cat) {
-  return cat.tiers.map(tier => `
-    <div class="pizza-tier-block">
-      <div class="pizza-tier-label">
-        <span class="pizza-tier-label__name">${esc(tier.name)}</span>
-        <span class="pizza-tier-label__prices">
-          Regular <span>₹${tier.prices.regular}</span> &nbsp;·&nbsp;
-          Medium <span>₹${tier.prices.medium}</span> &nbsp;·&nbsp;
-          Large <span>₹${tier.prices.large}</span>
-        </span>
-      </div>
-      <div class="cards-grid">
-        ${tier.items.map(it => buildPizzaCard(it, tier, tier.tag)).join('')}
-      </div>
-    </div>`).join('')
-    + (cat.extras ? `
-      <div class="sub-heading">${esc(cat.extras.heading)}</div>
-      <div class="cards-grid">${cat.extras.items.map(it => buildSimpleCard(it)).join('')}</div>` : '');
-}
-
-// ── SIMPLE items (burgers, pasta, etc.) ────────────────────
+// ── SIMPLE card (single price) ─────────────────────────────
 function buildSimpleCard(it) {
-  const price = it.price !== undefined ? it.price : (it.prices ? it.prices[0].price : 0);
-  const id    = makeId(it.name);
-
-  const priceHtml = it.prices
-    ? `<div class="multi-price-list">${it.prices.map(p =>
-        `<span class="multi-price-chip">${esc(p.label)} <strong>₹${p.price}</strong></span>`).join('')}</div>`
-    : `<span class="price-badge">₹${price}</span>`;
-
-  return `
-    <div class="item-card">
-      <div class="item-card__top">
-        <div class="item-card__info">
-          <div class="item-card__name">${esc(it.name)}</div>
-          ${it.desc ? `<div class="item-card__desc">${esc(it.desc)}</div>` : ''}
-        </div>
-        ${priceHtml}
+  const price = it.price;
+  const id = makeId(it.name);
+  return `<div class="mc">
+    <div class="mc__head">
+      <div>
+        <div class="mc__name">${esc(it.name)}</div>
+        ${it.desc ? `<div class="mc__desc">${esc(it.desc)}</div>` : ''}
       </div>
-      <div class="size-rows">
-        ${qtyRowHtml(id, it.name, price)}
-      </div>
-    </div>`;
+      <span class="mc__price">₹${price}</span>
+    </div>
+    <div class="mc__chips">
+      ${chip(id, it.name, price)}
+    </div>
+  </div>`;
 }
 
+// Route each item to the right builder
+function buildItem(it) {
+  if (it.prices) return buildMultiCard(it);
+  return buildSimpleCard(it);
+}
+
+// ── PIZZA category ─────────────────────────────────────────
+function buildPizza(cat) {
+  let html = cat.tiers.map(tier => `
+    <div class="tier-block">
+      <div class="tier-block__label">
+        <span class="tier-block__name">${esc(tier.name)}</span>
+        <span class="tier-block__hint">Regular · Medium · Large</span>
+      </div>
+      <div class="mc-grid">${tier.items.map(it => buildPizzaCard(it, tier, tier.tag)).join('')}</div>
+    </div>`).join('');
+
+  if (cat.extras) {
+    html += `<div class="sub-heading">${esc(cat.extras.heading)}</div>
+    <div class="mc-grid">${cat.extras.items.map(it => buildSimpleCard(it)).join('')}</div>`;
+  }
+  return html;
+}
+
+// ── SECTIONS category ──────────────────────────────────────
 function buildSections(cat) {
   return cat.sections.map(sec => `
     <div class="sub-heading">${esc(sec.heading)}</div>
-    <div class="cards-grid">${sec.items.map(it => buildSimpleCard(it)).join('')}</div>
+    <div class="mc-grid">${sec.items.map(it => buildItem(it)).join('')}</div>
   `).join('');
 }
 
@@ -386,7 +379,6 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 
-// ── Init cart ──────────────────────────────────────────────
 Cart.init();
 </script>
 
