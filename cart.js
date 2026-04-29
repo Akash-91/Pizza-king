@@ -59,7 +59,12 @@ items.forEach(i => { msg += `• ${i.name} x${i.qty} = ₹${i.price * i.qty}\n`;
 msg += `\n*Total: ₹${total()}*`;
 if (note.trim()) msg += `\n\n📝 Note: ${note.trim()}`;
 msg += ’\n\n📍 Delivery Address: ’;
-window.open(`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(msg)}`, ‘_blank’);
+const encoded = encodeURIComponent(msg);
+// Send to both numbers — open first immediately, second after short delay
+window.open(`https://wa.me/${SITE.whatsapp}?text=${encoded}`, ‘_blank’);
+setTimeout(() => {
+window.open(`https://wa.me/${SITE.whatsapp2}?text=${encoded}`, ‘_blank’);
+}, 800);
 }
 
 // ── Render drawer ─────────────────────────────────────────
